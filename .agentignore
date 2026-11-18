@@ -1,0 +1,14 @@
+# plus62: input token saver (safe build & asset ignores)
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+.gradle/
+*.apk
+*.aab
+*.idsig
+*.keystore
+*.jks
+coverage/
+*.log

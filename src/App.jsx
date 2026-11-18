@@ -1,7 +1,7 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import Landing from "@/pages/Landing";
+
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Interactions from "@/pages/Interactions";
@@ -52,7 +52,7 @@ export default function App() {
         />
 
         <Route element={<RequireAuth />}>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/interactions" element={<Interactions />} />
