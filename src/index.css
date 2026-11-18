@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Warna dasar ditulis sebagai kanal RGB agar Tailwind dapat
+       menerapkan modifier opasitas, mis. bg-ink/5. */
+    --canvas-rgb: 248 245 239;
+    --surface-rgb: 255 255 255;
+    --raised-rgb: 255 255 255;
+    --line-rgb: 232 226 214;
+    --ink-rgb: 31 27 45;
+    --muted-rgb: 119 114 126;
+
+    --canvas: rgb(var(--canvas-rgb));
+    --surface: rgb(var(--surface-rgb));
+    --raised: rgb(var(--raised-rgb));
+    --line: rgb(var(--line-rgb));
+    --ink: rgb(var(--ink-rgb));
+    --muted: rgb(var(--muted-rgb));
+    --shadow-soft: 0 1px 2px rgba(31, 27, 45, 0.04), 0 8px 24px -12px rgba(31, 27, 45, 0.14);
+    --shadow-lift: 0 2px 4px rgba(31, 27, 45, 0.05), 0 18px 40px -18px rgba(75, 50, 168, 0.28);
+    --grid-line: rgba(109, 74, 255, 0.10);
+  }
+
+  .dark {
+    --canvas-rgb: 22 18 31;
+    --surface-rgb: 30 25 48;
+    --raised-rgb: 37 31 58;
+    --line-rgb: 50 42 74;
+    --ink-rgb: 244 240 232;
+    --muted-rgb: 164 157 180;
+    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -16px rgba(0, 0, 0, 0.7);
+    --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.35), 0 22px 46px -20px rgba(109, 74, 255, 0.45);
+    --grid-line: rgba(167, 145, 255, 0.12);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    font-feature-settings: 'ss01' 1;
+  }
+
+  * {
+    @apply border-line;
+  }
+
+  :focus-visible {
+    outline: 2px solid #6D4AFF;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: rgba(109, 74, 255, 0.18);
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface border border-line rounded-card shadow-soft;
+  }
+
+  .field {
+    @apply w-full bg-surface border border-line rounded-xl px-3 py-2 text-sm text-ink
+           placeholder:text-muted focus:border-purple-400 focus:ring-2 focus:ring-purple-500/15 outline-none
+           transition-colors duration-200;
+  }
+
+  .hairline {
+    @apply border-b border-line;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .grid-paper {
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .scrollbar-slim::-webkit-scrollbar { height: 8px; width: 8px; }
+  .scrollbar-slim::-webkit-scrollbar-thumb { background: var(--line); border-radius: 99px; }
+  .scrollbar-slim::-webkit-scrollbar-track { background: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
