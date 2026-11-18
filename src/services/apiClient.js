@@ -23,7 +23,11 @@ export async function mock(data, meta = {}) {
 
 /** Pemanggilan REST API nyata. Dipakai saat VITE_USE_MOCK_DATA=false. */
 export async function request(path, { params, signal, ...init } = {}) {
-  const url = new URL(`${env.apiBaseUrl.replace(/\/$/, "")}${path}`);
+  // Basis window.location.origin agar base relatif ("/api") valid; URL absolut tetap didukung.
+  const url = new URL(
+    `${env.apiBaseUrl.replace(/\/$/, "")}${path}`,
+    window.location.origin,
+  );
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (

@@ -5,8 +5,9 @@ import path from "path";
 export default defineConfig({
   plugins: [react()],
 
-  // GitHub Pages repository path
-  base: "/ASCA-DASHBOARD-MONITORING/",
+  // Di-serve dari root domain oleh FastAPI (satu origin dengan /api),
+  // sehingga cookie login berfungsi. Bukan lagi GitHub Pages.
+  base: "/",
 
   resolve: {
     alias: {

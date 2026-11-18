@@ -10,7 +10,8 @@ const toBool = (value, fallback) => {
 };
 
 export const env = {
-  apiBaseUrl: raw.VITE_API_BASE_URL || "http://localhost:8000/api",
+  // Relatif ("/api") = satu origin dengan halaman, wajib agar cookie sesi terkirim.
+  apiBaseUrl: raw.VITE_API_BASE_URL || "/api",
   useMockData: toBool(raw.VITE_USE_MOCK_DATA, true),
   useLiveMonitoring: toBool(raw.VITE_USE_LIVE_MONITORING, false),
   telegramBotUrl: raw.VITE_TELEGRAM_BOT_URL || "",

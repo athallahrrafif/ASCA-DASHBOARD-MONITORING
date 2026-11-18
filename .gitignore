@@ -1,0 +1,13 @@
+# Rahasia — JANGAN PERNAH di-commit
+.env
+.env.*
+!.env.production
+!.env.example
+backend-monitoring/.env
+
+# Build & dependensi
+node_modules/
+dist/
+.venv/
+__pycache__/
+*.pyc

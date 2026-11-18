@@ -12,6 +12,7 @@ import time as clock
 import logging
 import os
 import re
+from pathlib import Path
 from collections import Counter, defaultdict
 from datetime import date, datetime, time, timedelta
 from functools import lru_cache
@@ -20,7 +21,8 @@ from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, Request, Response, status
 from pydantic import BaseModel, Field
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import MetaData, Table, and_, create_engine, func, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -37,16 +39,37 @@ for name in (TABLE_NAME, SCHEMA_NAME):
         raise RuntimeError('MONITOR_TABLE / MONITOR_SCHEMA hanya boleh huruf, angka, dan underscore')
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, connect_args={'check_same_thread': False} if DATABASE_URL.startswith('sqlite:') else {})
-app = FastAPI(title='FASCA Monitoring (read-only)', version='0.1.0')
+# Dokumentasi interaktif (/docs) dimatikan secara default agar skema API tidak terbuka
+# untuk publik. Nyalakan hanya saat lokal: FASCA_ENABLE_DOCS=true.
+_docs_on = os.getenv('FASCA_ENABLE_DOCS', 'false').lower() == 'true'
+app = FastAPI(
+    title='FASCA Monitoring (read-only)', version='0.1.0',
+    docs_url='/docs' if _docs_on else None,
+    redoc_url=None,
+    openapi_url='/openapi.json' if _docs_on else None,
+)
 logger = logging.getLogger('uvicorn.error')
 
 # --- Autentikasi admin lokal ----------------------------------------------------
 # Kredensial di .env BACKEND saja; jangan pernah gunakan variabel VITE_ untuk password.
-ADMIN_USERNAME = os.getenv('FASCA_ADMIN_USERNAME', 'admin')
-ADMIN_PASSWORD = os.getenv('FASCA_ADMIN_PASSWORD')
+def _env_any(*names, default=None):
+    """Terima nama FASCA_* maupun ASCA_* (contoh .env lama memakai ASCA_*)."""
+    for n in names:
+        v = os.getenv(n)
+        if v:
+            return v
+    return default
+
+ADMIN_USERNAME = _env_any('FASCA_ADMIN_USERNAME', 'ASCA_ADMIN_USERNAME', default='admin')
+ADMIN_PASSWORD = _env_any('FASCA_ADMIN_PASSWORD', 'ASCA_ADMIN_PASSWORD')
 
 COOKIE_NAME = 'fasca_admin_session'
-COOKIE_SECURE = os.getenv('FASCA_COOKIE_SECURE', 'false').lower() == 'true'
+COOKIE_SECURE = _env_any('FASCA_COOKIE_SECURE', 'ASCA_COOKIE_SECURE', default='false').lower() == 'true'
+
+# Mode internet (cookie secure): tolak password kosong / lemah sejak server start,
+# bukan baru error saat seseorang mencoba login.
+if COOKIE_SECURE and (not ADMIN_PASSWORD or ADMIN_PASSWORD.lower() in {'admin', 'password', '12345678'} or len(ADMIN_PASSWORD) < 10):
+    raise RuntimeError('FASCA_ADMIN_PASSWORD wajib diisi dan kuat (min. 10 karakter) saat FASCA_COOKIE_SECURE=true')
 SESSION_LIFETIME = 8 * 60 * 60  # 8 jam
 _login_lock = threading.Lock()
 _sessions = {}  # SHA-256 token acak -> unix waktu kedaluwarsa
@@ -98,6 +121,9 @@ def admin_login(payload: LoginPayload, request: Request, response: Response):
         _failed_logins[ip] = attempts
         if len(attempts) >= 5:
             raise HTTPException(status_code=429, detail='Terlalu banyak percobaan. Coba lagi dalam beberapa menit.')
+
+    if not ADMIN_PASSWORD:
+        raise HTTPException(status_code=503, detail='Password admin belum dikonfigurasi di server (FASCA_ADMIN_PASSWORD).')
 
     # Bandingkan hash dengan panjang tetap, tanpa mencetak password ke log.
     candidate = hashlib.sha256(payload.password.encode('utf-8')).digest()
@@ -473,3 +499,22 @@ def bot_status():
         'lastActivityMinutesAgo': max(0, round((now - as_datetime(latest)).total_seconds() / 60)) if latest else None,
         'uptimePercent': None, 'averageResponseMs': None, 'queueDepth': None,
     })
+
+# --- Sajikan frontend hasil build (npm run build -> dist/) dari origin yang sama ------
+# Satu origin dengan /api = cookie sesi HttpOnly + SameSite=strict bekerja tanpa CORS.
+# Letakkan PALING BAWAH agar tidak menimpa route /api di atas.
+DIST_DIR = Path(os.getenv('FRONTEND_DIST') or Path(__file__).resolve().parent.parent / 'dist').resolve()
+if (DIST_DIR / 'index.html').is_file():
+    if (DIST_DIR / 'assets').is_dir():
+        app.mount('/assets', StaticFiles(directory=DIST_DIR / 'assets'), name='assets')
+
+    @app.get('/{full_path:path}', include_in_schema=False)
+    def serve_frontend(full_path: str):
+        if full_path == 'api' or full_path.startswith('api/'):
+            raise HTTPException(status_code=404, detail='Endpoint tidak ditemukan.')
+        candidate = (DIST_DIR / full_path).resolve()
+        # Cegah path traversal; file statis di root dist (favicon, dll.) boleh dilayani.
+        if full_path and candidate.is_file() and DIST_DIR in candidate.parents:
+            return FileResponse(candidate)
+        # SPA fallback: React Router yang menangani /login, /dashboard, dst.
+        return FileResponse(DIST_DIR / 'index.html', headers={'Cache-Control': 'no-cache'})

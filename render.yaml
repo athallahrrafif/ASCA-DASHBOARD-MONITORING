@@ -1,0 +1,25 @@
+# Render Blueprint: satu web service (frontend + backend), plan Starter (selalu aktif).
+# Tagihan per detik: hapus / suspend service setelah pameran selesai.
+services:
+  - type: web
+    name: asca-dashboard
+    runtime: docker
+    plan: starter
+    region: singapore
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: FASCA_COOKIE_SECURE
+        value: "true"
+      - key: FASCA_ADMIN_USERNAME
+        value: admin
+      # Diisi manual di dashboard Render (sync: false = tidak disimpan di repo).
+      - key: FASCA_ADMIN_PASSWORD
+        sync: false
+      # Kosongkan DATABASE_URL untuk mode simulasi (demo.sqlite3 + banner DATA SIMULASI).
+      # Data asli: URL Supabase *Session pooler*, akun read-only, format postgresql+psycopg://...
+      - key: DATABASE_URL
+        sync: false
+      # Data asli: telegram_chat_logs. Mode simulasi: biarkan kosong (default chatbot_logs).
+      - key: MONITOR_TABLE
+        sync: false
