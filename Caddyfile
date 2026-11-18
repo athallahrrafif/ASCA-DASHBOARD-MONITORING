@@ -1,0 +1,6 @@
+# Caddy meminta & memperbarui sertifikat HTTPS (Let's Encrypt) otomatis untuk domain ini.
+# Syarat: DNS A record domain sudah mengarah ke IP VPS, port 80 dan 443 terbuka.
+{$SITE_DOMAIN} {
+	encode gzip
+	reverse_proxy app:8000
+}

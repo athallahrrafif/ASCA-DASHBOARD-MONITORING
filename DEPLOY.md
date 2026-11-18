@@ -7,7 +7,8 @@ dipakai lagi (frontend di sana tidak bisa mencapai backend dan login selalu gaga
 1. Render → **New → Blueprint** → pilih repo ini (membaca `render.yaml`).
 2. Isi env var yang `sync: false`:
    - `FASCA_ADMIN_PASSWORD` — panjang & acak (server menolak start bila < 10 karakter).
-   - `DATABASE_URL` + `MONITOR_TABLE` — **kosongkan dulu** untuk mode simulasi; uji login & tampilan.
+   - `DATABASE_URL=sqlite:///./demo.sqlite3` dan `MONITOR_TABLE=chatbot_logs` untuk mode simulasi
+     (**jangan dikosongkan**: variabel kosong membuat server gagal start); uji login & tampilan dulu.
 3. Setelah login berhasil, isi data asli:
    - `DATABASE_URL=postgresql+psycopg://ROLE.PROJECT_REF:PASSWORD@<host-session-pooler>:5432/postgres`
      (Supabase → Connect → **Session pooler**; password di-URL-encode; akun **read-only**).

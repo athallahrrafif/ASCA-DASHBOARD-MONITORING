@@ -16,10 +16,10 @@ services:
       # Diisi manual di dashboard Render (sync: false = tidak disimpan di repo).
       - key: FASCA_ADMIN_PASSWORD
         sync: false
-      # Kosongkan DATABASE_URL untuk mode simulasi (demo.sqlite3 + banner DATA SIMULASI).
+      # Mode simulasi (demo.sqlite3 + banner DATA SIMULASI): isi sqlite:///./demo.sqlite3. Jangan dikosongkan.
       # Data asli: URL Supabase *Session pooler*, akun read-only, format postgresql+psycopg://...
       - key: DATABASE_URL
         sync: false
-      # Data asli: telegram_chat_logs. Mode simulasi: biarkan kosong (default chatbot_logs).
+      # Data asli: telegram_chat_logs. Mode simulasi: chatbot_logs. Jangan dikosongkan.
       - key: MONITOR_TABLE
         sync: false
