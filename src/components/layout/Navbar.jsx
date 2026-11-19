@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { LogOut, Menu, Send } from "lucide-react";
-import NotificationDropdown from "./NotificationDropdown";
+// import NotificationDropdown from "./NotificationDropdown";
 import ThemeToggle from "./ThemeToggle";
 import { flatNav } from "./navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -58,7 +58,7 @@ export default function Navbar({ onMenuClick }) {
         </a>
       ) : null}
 
-      <NotificationDropdown />
+      {/* <NotificationDropdown /> */}
       <ThemeToggle />
       {logoutError && (
         <span

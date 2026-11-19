@@ -94,7 +94,6 @@ export default function Sidebar({ open, onClose }) {
           <Logo to="/dashboard" />
         </div>
         <NavItems />
-        <TelegramFooter />
       </aside>
 
       {/* Mobile: drawer */}
@@ -127,7 +126,6 @@ export default function Sidebar({ open, onClose }) {
                 </button>
               </div>
               <NavItems onNavigate={onClose} />
-              <TelegramFooter />
             </motion.aside>
           </div>
         ) : null}
